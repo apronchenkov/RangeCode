@@ -10,5 +10,5 @@ env.Append(LINKFLAGS=['-g'])
 env.Program(source=['ae.cpp'])
 env.Program(source=['ad.cpp'])
 
-env.Program(source=['qe.cpp'], LIBS=['perfmon'])
+env.Program(source=['qe.cpp'])
 env.Program(source=['qd.cpp'])
