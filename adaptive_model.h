@@ -40,7 +40,7 @@ inline void AdaptiveModel::Reset(size_t symbol_count)
     symbols_count_.assign(symbol_count, 1);
     cdf_.reserve(symbol_count + 1);
     total_counter_ = symbol_count;
-    update_downcounter_ = 32;
+    update_downcounter_ = 64;
     range_code::GenerateCdf(symbols_count_, &cdf_);
 }
 
@@ -49,7 +49,7 @@ inline void AdaptiveModel::Update(size_t symbol)
     symbols_count_.at(symbol) += 16;
     total_counter_ += 16;
 
-    if (total_counter_ >= (1<<24)) {
+    if (total_counter_ >= (1<<14)) {
         total_counter_ = 0;
         for (auto& symbol_count : symbols_count_) {
             symbol_count = (symbol_count + 1) / 2;
@@ -59,7 +59,7 @@ inline void AdaptiveModel::Update(size_t symbol)
 
     --update_downcounter_;
     if (update_downcounter_ == 0) {
-        update_downcounter_ = 64;
+        update_downcounter_ = 256;
         range_code::GenerateCdf(symbols_count_, &cdf_);
     }
 }

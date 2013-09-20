@@ -1,6 +1,7 @@
 #include "coder.h"
 #include "quality_model.h"
 
+#include <array>
 #include <iostream>
 
 int main()

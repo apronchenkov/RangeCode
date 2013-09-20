@@ -14,6 +14,5 @@ int main()
         coder.Put(byte, model.cdf());
         model.Update(byte);
     }
-
     return 0;
 }

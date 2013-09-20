@@ -2,7 +2,6 @@
 
 #include "adaptive_model.h"
 
-#include <array>
 #include <cstdint>
 #include <vector>
 
@@ -10,47 +9,37 @@
 class QualityModel {
 public:
     explicit QualityModel(size_t alphabet_size)
-      : alphabet_size_(alphabet_size)
-      , models_(1, AdaptiveModel(alphabet_size))
-      , model_(&models_.front())
-    {
-        c2_ = 0;
-        c1_ = 0;
-        position_ = 0;
-    }
+      : default_(alphabet_size)
+      , models_(1, default_)
+      , model_ptr_(&models_[0])
+      , position_(0)
+    { }
 
-    void Update(uint16_t symbol)
+    void Update(unsigned char symbol)
     {
+        model_ptr_->Update(symbol);
+
         if (symbol) {
-            c2_ = c1_;
-            c1_ = symbol;
-            ++position_;
+            const size_t index = (++position_ << 8) | symbol;
+            if (index >= models_.size()) {
+                models_.resize(index + 1);
+            }
+            model_ptr_ = &models_[index];
+            if (model_ptr_->cdf().empty()) {
+                *model_ptr_ = default_;
+            }
+
         } else {
-            c2_ = 0;
-            c1_ = 0;
+            model_ptr_ = &models_[0];
             position_ = 0;
         }
-        model_->Update(symbol);
-
-        const size_t index = (position_ * alphabet_size_ + c1_) * alphabet_size_ + c2_;
-        if (index >= models_.size()) {
-            models_.resize(index + 1);
-        }
-        model_ = &models_[index];
-        if (model_->cdf().empty()) {
-            model_->Reset(alphabet_size_);
-        }
     }
 
-    const std::vector<uint32_t>& cdf() const { return model_->cdf(); }
+    const std::vector<uint32_t>& cdf() const { return model_ptr_->cdf(); }
 
 private:
-    size_t alphabet_size_;
-
-    unsigned char c1_;
-    unsigned char c2_;
-    size_t position_;
-
+    AdaptiveModel default_;
     std::vector<AdaptiveModel> models_;
-    AdaptiveModel *model_;
+    AdaptiveModel* model_ptr_;
+    size_t position_;
 };

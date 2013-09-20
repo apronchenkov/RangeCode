@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <iostream>
 #include <numeric>
-#include <perfmon.h>
 #include <stdexcept>
 #include <vector>
 
