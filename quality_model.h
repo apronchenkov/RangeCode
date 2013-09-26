@@ -17,7 +17,7 @@ public:
 
     void Update(unsigned char symbol)
     {
-        model_ptr_->Update(symbol);
+        model_ptr_->Update<14>(symbol);
 
         if (symbol) {
             const size_t index = (++position_ << 8) | symbol;
@@ -42,4 +42,7 @@ private:
     std::vector<AdaptiveModel> models_;
     AdaptiveModel* model_ptr_;
     size_t position_;
+
+    QualityModel(const QualityModel&) = delete;
+    QualityModel& operator= (const QualityModel&) = delete;
 };

@@ -12,3 +12,5 @@ env.Program(source=['ad.cpp'])
 
 env.Program(source=['qe.cpp'])
 env.Program(source=['qd.cpp'])
+
+env.Program(source=['be.cpp'])

@@ -16,6 +16,7 @@ public:
 
     const std::vector<uint32_t>& cdf() const { return cdf_; }
 
+    template <int BIT_LIMIT = 24>
     void Update(size_t symbol);
 
 private:
@@ -24,6 +25,7 @@ private:
     size_t total_counter_;
     size_t update_downcounter_;
 };
+
 
 inline AdaptiveModel::AdaptiveModel()
   : total_counter_(0)
@@ -44,12 +46,16 @@ inline void AdaptiveModel::Reset(size_t symbol_count)
     range_code::GenerateCdf(symbols_count_, &cdf_);
 }
 
+
+template <int BIT_LIMIT>
 inline void AdaptiveModel::Update(size_t symbol)
 {
+    static_assert (8 <= BIT_LIMIT && BIT_LIMIT <= 24, "Bit limit must belong to [8, 24].");
+
     symbols_count_.at(symbol) += 16;
     total_counter_ += 16;
 
-    if (total_counter_ >= (1<<14)) {
+    while (total_counter_ >> BIT_LIMIT) {
         total_counter_ = 0;
         for (auto& symbol_count : symbols_count_) {
             symbol_count = (symbol_count + 1) / 2;
