@@ -7,18 +7,15 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
 
-    AdaptiveModel model(256);
+    AdaptiveModel model(257);
     range_code::Decoder coder(std::cin.rdbuf());
     std::streambuf* ostringstream = std::cout.rdbuf();
-    try {
-        for (;;) {
-            const auto symbol = coder.Get(model.cdf());
-            ostringstream->sputc(static_cast<char>(symbol));
-            model.Update(symbol);
-        }
-    } catch (const std::exception& ex) {
-        std::cerr << "Exception: " << ex.what() << '\n';
-        return -1;
+    size_t symbol = coder.Get(model.cdf());
+    while (symbol < 256) {
+        ostringstream->sputc(static_cast<char>(symbol));
+        std::cout.flush();
+        model.Update(symbol);
+        symbol = coder.Get(model.cdf());
     }
     return 0;
 }

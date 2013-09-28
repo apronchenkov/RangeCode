@@ -32,10 +32,10 @@ inline void GenerateCdf(const std::vector<uint32_t>& symbols_count, std::vector<
     cdf->push_back(0xffffffff);
 }
 
-
 class Encoder {
 public:
     explicit Encoder(std::streambuf* ostreambuf);
+    ~Encoder();
 
     void Put(size_t symbol, const std::vector<uint32_t>& cdf);
 
@@ -63,6 +63,26 @@ inline Encoder::Encoder(std::streambuf* ostreambuf)
   , carry_count_(0)
   , ostreambuf_(ostreambuf)
 { }
+
+inline Encoder::~Encoder()
+{
+    if (carry_count_ > 0) {
+        WriteByte(carry_acceptor_);
+        WriteByten(0xff, carry_count_ - 1);
+    }
+
+    while (range_size_ <= 0x01000000) {
+        value_ = (value_ << 8) | ReadByte();
+        range_begin_ <<= 8;
+        range_size_ <<= 8;
+    }
+
+    // TODO (apronchenkov): It seams that the following could be done much efficiently!
+    WriteByte(0xff & (range_begin_ >> 24));
+    WriteByte(0xff & (range_begin_ >> 16));
+    WriteByte(0xff & (range_begin_ >> 8));
+    WriteByte(0xff & (range_begin_ >> 0));
+}
 
 inline void Encoder::Put(size_t symbol, const std::vector<uint32_t>& cdf)
 {
@@ -177,16 +197,6 @@ inline size_t Decoder::Get(const std::vector<uint32_t>& cdf)
     if (cdf.size() < 2 || cdf.front() != 0 || cdf.back() != 0xffffffff) {
         throw std::invalid_argument("range_code: Decoder.Get: Bad cdf.");
     }
-
-    // Достижимый результат: ./d < quality.c > quality.d  36.20s user 0.76s system 99% cpu 37.087 total
-    // [без проверок] ./d < quality.c > quality.d  35.06s user 0.68s system 99% cpu 36.048 total
-    //
-    // Переход на интерфейс coder2:
-    //   ./d < quality.c > quality.d  32.59s user 0.85s system 99% cpu 33.472 total
-    //   ./d < quality.c > quality.d  32.46s user 0.76s system 99% cpu 33.233 total
-    //
-    // Отключил perfmon (нет паузы на подсчет частоты cpu)
-    //   ./d < quality.c > quality.d  32.18s user 0.66s system 99% cpu 32.858 total
     Renormalize();
 
     const uint64_t range_size = range_size_;
