@@ -8,7 +8,7 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
 
-    const std::string alphabet = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    const std::string alphabet = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\0";
     QualityModel model(alphabet.size());
     std::array<unsigned char, 256> alphabet_map;
     {
@@ -26,6 +26,7 @@ int main()
         coder.Put(symbol, model.cdf());
         model.Update(symbol);
     }
+    coder.Put(alphabet.size() - 1, model.cdf());
 
     return 0;
 }
