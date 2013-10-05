@@ -2,8 +2,9 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
+#include <istream>
 #include <numeric>
+#include <ostream>
 #include <stdexcept>
 #include <vector>
 
@@ -69,12 +70,6 @@ inline Encoder::~Encoder()
     if (carry_count_ > 0) {
         WriteByte(carry_acceptor_);
         WriteByten(0xff, carry_count_ - 1);
-    }
-
-    while (range_size_ <= 0x01000000) {
-        value_ = (value_ << 8) | ReadByte();
-        range_begin_ <<= 8;
-        range_size_ <<= 8;
     }
 
     // TODO (apronchenkov): It seams that the following could be done much efficiently!
